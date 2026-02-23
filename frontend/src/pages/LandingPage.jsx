@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState('');
   const [showLocation, setShowLocation] = useState(false);
   const [validationError, setValidationError] = useState('');
 
@@ -42,6 +42,7 @@ export default function LandingPage() {
     if (!city.trim()) missing.push('City');
     if (!state.trim()) missing.push('State');
     if (!country.trim()) missing.push('Country');
+    if (!date.trim()) missing.push('Date');
 
     if (missing.length) {
       setShowLocation(true);
@@ -54,7 +55,7 @@ export default function LandingPage() {
       city: city.trim(),
       state: state.trim(),
       country: country.trim(),
-      date: date || new Date().toISOString().slice(0, 10),
+      date: date,
     });
 
     navigate(`/results?${params.toString()}`);
