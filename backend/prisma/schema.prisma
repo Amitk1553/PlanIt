@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  passwordHash String
-  tasks        Task[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  passwordHash  String
+  tasks         Task[]
+  searchHistory SearchHistory[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model Task {
@@ -34,4 +35,21 @@ model TaskResult {
   agentType String
   payload   Json
   createdAt DateTime @default(now())
+}
+
+model SearchHistory {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  prompt    String
+  city      String
+  state     String
+  country   String
+  date      String
+  weather   Json?
+  movies    Json?
+  restaurants Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
 }

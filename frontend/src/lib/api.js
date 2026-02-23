@@ -6,6 +6,7 @@ async function postJson(path, payload) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -18,7 +19,23 @@ async function postJson(path, payload) {
 }
 
 async function getJson(path) {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Request failed');
+  }
+
+  return response.json();
+}
+
+async function deleteJson(path) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -34,6 +51,20 @@ function slugifyCity(city) {
   const normalized = city.trim().toLowerCase();
   return overrides[normalized] || normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
+
+export const authApi = {
+  signup: (email, password) => postJson('/api/users/signup', { email, password }),
+  login: (email, password) => postJson('/api/users/login', { email, password }),
+  logout: () => postJson('/api/users/logout', {}),
+  me: () => getJson('/api/users/me'),
+};
+
+export const historyApi = {
+  save: (data) => postJson('/api/history', data),
+  list: (limit = 20) => getJson(`/api/history?limit=${limit}`),
+  getById: (id) => getJson(`/api/history/${id}`),
+  remove: (id) => deleteJson(`/api/history/${id}`),
+};
 
 export const planItApi = {
   getWeather: (city, date) => {

@@ -7,6 +7,7 @@ const required = [
   'GEMINI_API_KEY',
   'PORT',
   'FIRECRAWL_API_KEY',
+  'JWT_SECRET',
 ];
 const missing = required.filter((key) => !process.env[key]);
 
@@ -19,4 +20,5 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY,
   port: Number(process.env.PORT) || 4000,
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY,
+  jwtSecret: process.env.JWT_SECRET,
 };

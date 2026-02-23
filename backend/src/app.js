@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import planRoutes from './routes/plan.routes.js';
 import userRoutes from './routes/user.routes.js';
 import movieRoutes from './routes/movie.routes.js';
 import restaurantRoutes from './routes/restaurant.routes.js';
+import historyRoutes from './routes/history.routes.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import { scrapeMovies } from './services/scraper.js';
 import { scrapeRestaurants } from './services/zomato-scraper.js';
@@ -14,11 +16,13 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
+app.use(cookieParser());
 app.use(express.json());
 app.use('/api', planRoutes);
 app.use('/api', userRoutes);
 app.use('/api', movieRoutes);
 app.use('/api', restaurantRoutes);
+app.use('/api', historyRoutes);
 
 app.get("/api/weather", async (req, res) => {
   try {

@@ -5,7 +5,8 @@ import { ArrowLeft, CloudSun, Film, Utensils } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { planItApi } from '@/lib/api';
+import { planItApi, historyApi } from '@/lib/api';
+import { useAuth } from '@/lib/AuthContext';
 
 const dayparts = [
   { key: 'Morning', label: 'Morning' },
@@ -41,7 +42,9 @@ function safeString(value) {
 export default function ResultsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const resultsRef = useRef(null);
+  const historySaved = useRef(false);
 
   const [weather, setWeather] = useState(null);
   const [moviePlan, setMoviePlan] = useState(null);
@@ -89,6 +92,24 @@ export default function ResultsPage() {
       .finally(() => setLoadingRestaurants(false));
   }, [prompt, city, state, country, date]);
 
+  // Save search results to history once all data is loaded
+  useEffect(() => {
+    if (loadingWeather || loadingMovies || loadingRestaurants) return;
+    if (historySaved.current || !prompt) return;
+    historySaved.current = true;
+
+    historyApi.save({
+      prompt,
+      city,
+      state,
+      country,
+      date,
+      weather: weather ?? null,
+      movies: moviePlan?.movies ?? null,
+      restaurants: restaurants.length > 0 ? restaurants : null,
+    }).catch(() => {});
+  }, [loadingWeather, loadingMovies, loadingRestaurants, prompt, city, state, country, date, weather, moviePlan, restaurants]);
+
   // Animate each section as it finishes loading
   useEffect(() => {
     if (loadingWeather) return;
@@ -135,7 +156,7 @@ export default function ResultsPage() {
         </div>
 
         <button className="flex h-8 w-8 items-center justify-center rounded-full bg-olive-600 text-xs font-semibold text-white transition hover:bg-olive-500">
-          U
+          {user?.email?.[0]?.toUpperCase() || 'U'}
         </button>
       </header>
 

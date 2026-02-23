@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import gsap from 'gsap';
-import { MapPin, SendHorizonal, Plus, Compass, Utensils, Film, CloudSun } from 'lucide-react';
+import { MapPin, SendHorizonal, Plus, Compass, Utensils, Film, CloudSun, Clock, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 const suggestionCards = [
   { icon: <Compass className="h-5 w-5" />, label: 'Explore plans', color: 'text-teal-300' },
@@ -12,7 +13,9 @@ const suggestionCards = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const pageRef = useRef(null);
+  const menuRef = useRef(null);
 
   const [prompt, setPrompt] = useState('');
   const [city, setCity] = useState('');
@@ -21,6 +24,7 @@ export default function LandingPage() {
   const [date, setDate] = useState('');
   const [showLocation, setShowLocation] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -31,6 +35,17 @@ export default function LandingPage() {
       );
     }, pageRef);
     return () => ctx.revert();
+  }, []);
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSubmit = (e) => {
@@ -83,7 +98,7 @@ export default function LandingPage() {
       </div>
 
       {/* Navbar */}
-      <header className="landing-animate relative z-10 flex items-center justify-between px-6 py-4 md:px-10">
+      <header className="landing-animate relative z-20 flex items-center justify-between px-6 py-4 md:px-10">
         <div className="flex items-center gap-2">
           <span className="text-xl font-semibold tracking-tight text-white">
             PlanIT
@@ -93,9 +108,37 @@ export default function LandingPage() {
           </svg>
         </div>
 
-        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-olive-600 text-sm font-semibold text-white transition hover:bg-olive-500">
-          U
-        </button>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-olive-600 text-sm font-semibold text-white transition hover:bg-olive-500"
+          >
+            {user?.email?.[0]?.toUpperCase() || 'U'}
+          </button>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-forest-900/95 shadow-xl backdrop-blur-md">
+              <div className="border-b border-white/5 px-4 py-3">
+                <p className="truncate text-xs text-white/50">{user?.email}</p>
+              </div>
+              <Link
+                to="/history"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+              >
+                <Clock className="h-4 w-4" />
+                History
+              </Link>
+              <button
+                onClick={() => { setShowProfileMenu(false); logout(); }}
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-red-400/80 transition hover:bg-white/5 hover:text-red-400"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Main content */}
